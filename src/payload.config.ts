@@ -1,5 +1,7 @@
 // storage-adapter-import-placeholder
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { vercelPostgresAdapter } from '@payloadcms/db-vercel-postgres'
+import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 
 import sharp from 'sharp' // sharp-import
 import path from 'path'
@@ -59,9 +61,14 @@ export default buildConfig({
   },
   // This config helps us configure global or default features that the other editors can inherit
   editor: defaultLexical,
-  db: postgresAdapter({
+  // db: postgresAdapter({
+  //   pool: {
+  //     connectionString: process.env.DATABASE_URI || '',
+  //   },
+  // }),
+  db: vercelPostgresAdapter({
     pool: {
-      connectionString: process.env.DATABASE_URI || '',
+      connectionString: process.env.POSTGRES_URL || '',
     },
   }),
   collections: [Pages, Posts, Media, Categories, Users],
@@ -69,7 +76,13 @@ export default buildConfig({
   globals: [Header, Footer],
   plugins: [
     ...plugins,
-    // storage-adapter-placeholder
+    vercelBlobStorage({
+      enabled: true,
+      collections: {
+        media: true,
+      },
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+    }),
   ],
   secret: process.env.PAYLOAD_SECRET,
   sharp,
